@@ -157,6 +157,14 @@ export default function Home() {
                         <IconList />
                         <span>Listas Pendientes</span>
                     </button>
+                    <button onClick={() => { setMenuOpen(false); navigate('/tareas') }}>
+                        <IconCheck />
+                        <span>Pendientes del Día</span>
+                    </button>
+                    <button onClick={() => { setMenuOpen(false); navigate('/movimientos') }}>
+                        <IconHistory />
+                        <span>Ingresos y Egresos</span>
+                    </button>
                     <button onClick={() => { setMenuOpen(false); navigate('/resumen') }}>
                         <IconChart />
                         <span>Resumen de Gastos</span>

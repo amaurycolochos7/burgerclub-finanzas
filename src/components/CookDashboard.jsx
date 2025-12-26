@@ -2,31 +2,43 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { IconPlus, IconList, IconArrowRight } from './Icons'
+import { IconPlus, IconList } from './Icons'
 
 export default function CookDashboard() {
     const navigate = useNavigate()
     const { user, logout } = useAuth()
     const [lists, setLists] = useState([])
     const [loading, setLoading] = useState(true)
+    const [salesTotal, setSalesTotal] = useState(0)
 
     useEffect(() => {
-        fetchMyLists()
+        fetchData()
     }, [])
 
-    const fetchMyLists = async () => {
+    const fetchData = async () => {
         try {
-            const { data, error } = await supabase
+            // Fetch recent lists
+            const { data: listsData } = await supabase
                 .from('kitchen_lists')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(5)
 
-            if (error) throw error
-            setLists(data || [])
+            setLists(listsData || [])
+
+            // Fetch today's sales
+            const today = new Date().toISOString().split('T')[0]
+            const { data: salesData } = await supabase
+                .from('sales')
+                .select('amount')
+                .eq('user_id', user.id)
+                .eq('sale_date', today)
+
+            const total = (salesData || []).reduce((sum, s) => sum + parseFloat(s.amount), 0)
+            setSalesTotal(total)
         } catch (error) {
-            console.error('Error fetching lists:', error)
+            console.error('Error fetching data:', error)
         } finally {
             setLoading(false)
         }
@@ -39,6 +51,14 @@ export default function CookDashboard() {
             day: 'numeric',
             month: 'short'
         })
+    }
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            minimumFractionDigits: 2
+        }).format(amount || 0)
     }
 
     const getStatusBadge = (status) => {
@@ -67,24 +87,36 @@ export default function CookDashboard() {
                     <p className="cook-greeting">Hola, {user.name}</p>
                     <p className="cook-role">Cocinero</p>
                 </div>
-                <button className="btn-text" onClick={logout}>
+                <button className="btn-text" onClick={() => { logout(); navigate('/login') }}>
                     Salir
                 </button>
             </div>
 
-            <button
-                className="cook-main-action"
-                onClick={() => navigate('/cocina/nueva-lista')}
-            >
-                <div className="cook-action-icon">
-                    <IconPlus />
-                </div>
-                <div className="cook-action-text">
-                    <span className="cook-action-title">Nueva Lista</span>
-                    <span className="cook-action-subtitle">Crear lista para mañana</span>
-                </div>
-            </button>
+            {/* Today's Sales Summary */}
+            <div className="cook-sales-summary">
+                <span className="cook-sales-label">Ventas de hoy</span>
+                <span className="cook-sales-amount">{formatCurrency(salesTotal)}</span>
+            </div>
 
+            {/* Quick Actions */}
+            <div className="cook-actions">
+                <button
+                    className="cook-action-btn primary"
+                    onClick={() => navigate('/cocina/nueva-lista')}
+                >
+                    <IconList />
+                    <span>Nueva Lista</span>
+                </button>
+                <button
+                    className="cook-action-btn success"
+                    onClick={() => navigate('/cocina/ventas')}
+                >
+                    <IconPlus />
+                    <span>Agregar Venta</span>
+                </button>
+            </div>
+
+            {/* Recent Lists */}
             <div className="cook-section">
                 <div className="cook-section-header">
                     <h2 className="cook-section-title">Mis Listas</h2>

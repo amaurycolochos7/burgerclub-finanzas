@@ -11,6 +11,9 @@ import CreateKitchenList from './components/CreateKitchenList'
 import MyLists from './components/MyLists'
 import PendingLists from './components/PendingLists'
 import UserManagement from './components/UserManagement'
+import AddSale from './components/AddSale'
+import IncomeExpenseHistory from './components/IncomeExpenseHistory'
+import DailyTasks from './components/DailyTasks'
 import './index.css'
 
 // Protected route for admin
@@ -59,11 +62,14 @@ function AppRoutes() {
       <Route path="/resumen/:periodo" element={<AdminRoute><ResumenPeriodo /></AdminRoute>} />
       <Route path="/pendientes" element={<AdminRoute><PendingLists /></AdminRoute>} />
       <Route path="/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
+      <Route path="/movimientos" element={<AdminRoute><IncomeExpenseHistory /></AdminRoute>} />
+      <Route path="/tareas" element={<AdminRoute><DailyTasks /></AdminRoute>} />
 
       {/* Cook routes */}
       <Route path="/cocina" element={<CookRoute><CookDashboard /></CookRoute>} />
       <Route path="/cocina/nueva-lista" element={<CookRoute><CreateKitchenList /></CookRoute>} />
       <Route path="/cocina/mis-listas" element={<CookRoute><MyLists /></CookRoute>} />
+      <Route path="/cocina/ventas" element={<CookRoute><AddSale /></CookRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<RoleRedirect />} />

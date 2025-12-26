@@ -1999,3 +1999,297 @@ h6 {
   padding-top: var(--spacing-md) !important;
   color: var(--danger) !important;
 }
+
+/* ============================================
+   COOK SALES STYLES
+   ============================================ */
+
+.cook-sales-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.cook-sales-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.cook-sales-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.cook-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.cook-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cook-action-btn:hover {
+  background: var(--bg-hover);
+}
+
+.cook-action-btn.primary {
+  background: var(--accent-primary);
+  border-color: transparent;
+}
+
+.cook-action-btn.success {
+  background: var(--success);
+  border-color: transparent;
+}
+
+.cook-action-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Sale Form */
+.sale-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.input-large {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+/* ============================================
+   INCOME/EXPENSE HISTORY STYLES
+   ============================================ */
+
+.history-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.history-summary-card {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.history-summary-card.income {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.history-summary-card.expense {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.history-summary-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.history-summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.history-summary-card.income .history-summary-value {
+  color: var(--success);
+}
+
+.history-summary-card.expense .history-summary-value {
+  color: var(--danger);
+}
+
+.history-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  background: var(--bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.history-tab {
+  flex: 1;
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.history-tab.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.transaction-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.transaction-desc {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transaction-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.transaction-amount {
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: var(--spacing-md);
+}
+
+.transaction-amount.income {
+  color: var(--success);
+}
+
+.transaction-amount.expense {
+  color: var(--danger);
+}
+
+/* ============================================
+   DAILY TASKS STYLES
+   ============================================ */
+
+.add-task-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.add-task-form .input {
+  flex: 1;
+}
+
+.tasks-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.tasks-section-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.tasks-section-title.completed {
+  color: var(--success);
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.task-item.completed {
+  opacity: 0.6;
+}
+
+.task-toggle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.task-toggle:hover {
+  border-color: var(--accent-primary);
+}
+
+.task-toggle.checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.task-toggle.checked svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.task-title {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
