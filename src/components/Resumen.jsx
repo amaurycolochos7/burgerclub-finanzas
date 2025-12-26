@@ -17,40 +17,64 @@ export default function Resumen() {
 
     const fetchData = async () => {
         try {
+            // 1. Fetch Capital
             const { data: capitalData } = await supabase
                 .from('capital')
                 .select('amount')
                 .limit(1)
                 .single()
 
-            if (capitalData) {
-                setCapital(capitalData.amount)
-            }
+            const baseCapital = capitalData?.amount || 0
 
+            // 2. Fetch Shopping Items
             const { data: itemsData } = await supabase
                 .from('shopping_items')
                 .select('price, purchase_date')
 
+            // 3. Fetch Payroll
+            const { data: payrollData } = await supabase
+                .from('payroll')
+                .select('amount, payment_date')
+
+            let totalSpent = 0
+            let weekly = 0, monthly = 0, yearly = 0
+
+            const now = new Date()
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1)
+            const yearAgo = new Date(now.getFullYear(), 0, 1)
+
+            // Process Shopping
             if (itemsData) {
-                const now = new Date()
-                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-                const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1)
-                const yearAgo = new Date(now.getFullYear(), 0, 1)
-
-                let weekly = 0, monthly = 0, yearly = 0
                 itemsData.forEach(item => {
-                    const itemDate = new Date(item.purchase_date + 'T12:00:00')
                     const price = parseFloat(item.price) || 0
+                    const date = new Date(item.purchase_date + 'T12:00:00')
 
-                    if (itemDate >= weekAgo) weekly += price
-                    if (itemDate >= monthAgo) monthly += price
-                    if (itemDate >= yearAgo) yearly += price
+                    totalSpent += price
+                    if (date >= weekAgo) weekly += price
+                    if (date >= monthAgo) monthly += price
+                    if (date >= yearAgo) yearly += price
                 })
-
-                setGastoSemanal(weekly)
-                setGastoMensual(monthly)
-                setGastoAnual(yearly)
             }
+
+            // Process Payroll
+            if (payrollData) {
+                payrollData.forEach(pay => {
+                    const amount = parseFloat(pay.amount) || 0
+                    const date = new Date(pay.payment_date)
+
+                    totalSpent += amount
+                    if (date >= weekAgo) weekly += amount
+                    if (date >= monthAgo) monthly += amount
+                    if (date >= yearAgo) yearly += amount
+                })
+            }
+
+            setCapital(baseCapital - totalSpent) // Correct: Available = Capital - Spent
+            setGastoSemanal(weekly)
+            setGastoMensual(monthly)
+            setGastoAnual(yearly)
+
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {

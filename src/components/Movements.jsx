@@ -30,7 +30,9 @@ export default function Movements() {
             const combinedMovements = []
 
             // A. Group shopping items by date
-            const itemsByDate = (itemsData || []).reduce((acc, item) => {
+            const safeItems = Array.isArray(itemsData) ? itemsData : []
+
+            const itemsByDate = safeItems.reduce((acc, item) => {
                 const date = item.purchase_date
                 if (!acc[date]) {
                     acc[date] = { count: 0, total: 0, items: [] }
@@ -41,28 +43,32 @@ export default function Movements() {
                 return acc
             }, {})
 
-            Object.keys(itemsByDate).forEach(date => {
-                combinedMovements.push({
-                    type: 'shopping',
-                    id: `shopping-${date}`,
-                    date: date,
-                    title: 'Lista de Compras',
-                    amount: itemsByDate[date].total,
-                    details: `${itemsByDate[date].count} items`
-                })
-            })
-
-                // B. Add payroll records
-                (payrollData || []).forEach(pay => {
+            if (itemsByDate && typeof itemsByDate === 'object') {
+                Object.keys(itemsByDate).forEach(date => {
                     combinedMovements.push({
-                        type: 'payroll',
-                        id: pay.id,
-                        date: pay.payment_date,
-                        title: `Pago Nómina: ${pay.users?.name}`,
-                        amount: parseFloat(pay.amount),
-                        details: pay.notes || 'Sin notas'
+                        type: 'shopping',
+                        id: `shopping-${date}`,
+                        date: date,
+                        title: 'Lista de Compras',
+                        amount: itemsByDate[date].total,
+                        details: `${itemsByDate[date].count} items`
                     })
                 })
+            }
+
+            // B. Add payroll records
+            const safePayroll = Array.isArray(payrollData) ? payrollData : []
+
+            safePayroll.forEach(pay => {
+                combinedMovements.push({
+                    type: 'payroll',
+                    id: pay.id,
+                    date: pay.payment_date,
+                    title: `Pago Nómina: ${pay.users?.name}`,
+                    amount: parseFloat(pay.amount),
+                    details: pay.notes || 'Sin notas'
+                })
+            })
 
             // Sort by date desc
             combinedMovements.sort((a, b) => new Date(b.date) - new Date(a.date))
