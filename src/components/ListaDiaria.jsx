@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { IconArrowLeft, IconPlus, IconTrash, IconEmpty } from './Icons'
+import { IconArrowLeft, IconPlus, IconTrash, IconEmpty, IconCheck } from './Icons'
 
 export default function ListaDiaria() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const [items, setItems] = useState([])
+    const [tasks, setTasks] = useState([])
     const [capital, setCapital] = useState(0)
     const [loading, setLoading] = useState(true)
     const [newItemName, setNewItemName] = useState('')
     const [newItemPrice, setNewItemPrice] = useState('')
+    const [newTask, setNewTask] = useState('')
+    const [showTasks, setShowTasks] = useState(true)
     const [editingId, setEditingId] = useState(null)
     const [editingField, setEditingField] = useState(null)
     const [editValue, setEditValue] = useState('')
@@ -35,15 +38,23 @@ export default function ListaDiaria() {
                 setCapital(capitalData.amount)
             }
 
-            const { data: itemsData, error } = await supabase
+            const { data: itemsData } = await supabase
                 .from('shopping_items')
                 .select('*')
                 .eq('purchase_date', selectedDate)
                 .order('is_completed', { ascending: true })
                 .order('created_at', { ascending: false })
 
-            if (error) throw error
             setItems(itemsData || [])
+
+            // Fetch tasks for this date
+            const { data: tasksData } = await supabase
+                .from('tasks')
+                .select('*')
+                .eq('task_date', selectedDate)
+                .order('created_at', { ascending: true })
+
+            setTasks(tasksData || [])
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -79,6 +90,52 @@ export default function ListaDiaria() {
         }
     }
 
+    const addTask = async () => {
+        if (!newTask.trim()) return
+
+        try {
+            const { data, error } = await supabase
+                .from('tasks')
+                .insert([{
+                    title: newTask.trim(),
+                    task_date: selectedDate,
+                    is_completed: false
+                }])
+                .select()
+                .single()
+
+            if (error) throw error
+            setTasks(prev => [...prev, data])
+            setNewTask('')
+        } catch (error) {
+            console.error('Error adding task:', error)
+        }
+    }
+
+    const toggleTask = async (task) => {
+        try {
+            await supabase
+                .from('tasks')
+                .update({ is_completed: !task.is_completed })
+                .eq('id', task.id)
+
+            setTasks(prev => prev.map(t =>
+                t.id === task.id ? { ...t, is_completed: !t.is_completed } : t
+            ))
+        } catch (error) {
+            console.error('Error toggling task:', error)
+        }
+    }
+
+    const deleteTask = async (id) => {
+        try {
+            await supabase.from('tasks').delete().eq('id', id)
+            setTasks(prev => prev.filter(t => t.id !== id))
+        } catch (error) {
+            console.error('Error deleting task:', error)
+        }
+    }
+
     const startEditing = (item, field) => {
         setEditingId(item.id)
         setEditingField(field)
@@ -100,12 +157,10 @@ export default function ListaDiaria() {
         }
 
         try {
-            const { error } = await supabase
+            await supabase
                 .from('shopping_items')
                 .update(updateData)
                 .eq('id', item.id)
-
-            if (error) throw error
 
             setItems(prev => prev.map(i =>
                 i.id === item.id ? { ...i, ...updateData } : i
@@ -136,15 +191,13 @@ export default function ListaDiaria() {
         const newStatus = !item.is_completed
 
         try {
-            const { error } = await supabase
+            await supabase
                 .from('shopping_items')
                 .update({
                     is_completed: newStatus,
                     completed_at: newStatus ? new Date().toISOString() : null
                 })
                 .eq('id', item.id)
-
-            if (error) throw error
 
             setItems(prev => sortItems(
                 prev.map(i => i.id === item.id ? { ...i, is_completed: newStatus } : i)
@@ -156,13 +209,7 @@ export default function ListaDiaria() {
 
     const deleteItem = async (id) => {
         try {
-            const { error } = await supabase
-                .from('shopping_items')
-                .delete()
-                .eq('id', id)
-
-            if (error) throw error
-
+            await supabase.from('shopping_items').delete().eq('id', id)
             setItems(prev => prev.filter(i => i.id !== id))
         } catch (error) {
             console.error('Error deleting item:', error)
@@ -197,17 +244,17 @@ export default function ListaDiaria() {
 
     const totalGasto = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
     const saldo = capital - totalGasto
-    const isDeficit = saldo < 0
 
     const pendingItems = items.filter(i => !i.is_completed)
     const completedItems = items.filter(i => i.is_completed)
+    const pendingTasks = tasks.filter(t => !t.is_completed)
+    const completedTasks = tasks.filter(t => t.is_completed)
 
     const renderItem = (item, isCompleted) => (
         <div key={item.id} className={`shopping-item ${isCompleted ? 'completed' : ''}`}>
             <button
                 className={`circle-toggle ${isCompleted ? 'checked' : ''}`}
                 onClick={() => toggleItem(item)}
-                aria-label={isCompleted ? 'Desmarcar' : 'Marcar como completado'}
             />
             <div className="item-content">
                 {editingId === item.id && editingField === 'name' ? (
@@ -221,10 +268,7 @@ export default function ListaDiaria() {
                         autoFocus
                     />
                 ) : (
-                    <span
-                        className="item-name editable"
-                        onClick={() => startEditing(item, 'name')}
-                    >
+                    <span className="item-name editable" onClick={() => startEditing(item, 'name')}>
                         {item.name}
                     </span>
                 )}
@@ -242,18 +286,11 @@ export default function ListaDiaria() {
                     autoFocus
                 />
             ) : (
-                <span
-                    className="item-price editable"
-                    onClick={() => startEditing(item, 'price')}
-                >
+                <span className="item-price editable" onClick={() => startEditing(item, 'price')}>
                     {formatCurrency(item.price)}
                 </span>
             )}
-            <button
-                className="delete-btn"
-                onClick={() => deleteItem(item.id)}
-                aria-label="Eliminar"
-            >
+            <button className="delete-btn" onClick={() => deleteItem(item.id)}>
                 <IconTrash />
             </button>
         </div>
@@ -300,12 +337,78 @@ export default function ListaDiaria() {
                 </div>
                 <div className="balance-item">
                     <p className="balance-item-label">Saldo</p>
-                    <p className={`balance-item-value ${isDeficit ? 'balance-negative' : 'balance-positive'}`}>
-                        {isDeficit ? '- ' : ''}{formatCurrency(Math.abs(saldo))}
+                    <p className={`balance-item-value ${saldo < 0 ? 'balance-negative' : 'balance-positive'}`}>
+                        {saldo < 0 ? '- ' : ''}{formatCurrency(Math.abs(saldo))}
                     </p>
                 </div>
             </div>
 
+            {/* TASKS SECTION */}
+            <div className="inline-tasks-section">
+                <button
+                    className="inline-tasks-header"
+                    onClick={() => setShowTasks(!showTasks)}
+                >
+                    <span className="inline-tasks-title">
+                        Pendientes del día
+                        {pendingTasks.length > 0 && (
+                            <span className="inline-tasks-badge">{pendingTasks.length}</span>
+                        )}
+                    </span>
+                    <span className={`inline-tasks-arrow ${showTasks ? 'open' : ''}`}>▼</span>
+                </button>
+
+                {showTasks && (
+                    <div className="inline-tasks-content">
+                        <div className="inline-tasks-add">
+                            <input
+                                type="text"
+                                className="input"
+                                value={newTask}
+                                onChange={(e) => setNewTask(e.target.value)}
+                                placeholder="Agregar pendiente..."
+                                onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                            />
+                            <button
+                                className="btn btn-primary btn-icon-only"
+                                onClick={addTask}
+                                disabled={!newTask.trim()}
+                            >
+                                <IconPlus />
+                            </button>
+                        </div>
+
+                        {tasks.length === 0 ? (
+                            <p className="inline-tasks-empty">Sin pendientes para este día</p>
+                        ) : (
+                            <div className="inline-tasks-list">
+                                {pendingTasks.map(task => (
+                                    <div key={task.id} className="inline-task-item">
+                                        <button className="task-toggle" onClick={() => toggleTask(task)} />
+                                        <span className="inline-task-title">{task.title}</span>
+                                        <button className="task-delete" onClick={() => deleteTask(task.id)}>
+                                            <IconTrash />
+                                        </button>
+                                    </div>
+                                ))}
+                                {completedTasks.map(task => (
+                                    <div key={task.id} className="inline-task-item completed">
+                                        <button className="task-toggle checked" onClick={() => toggleTask(task)}>
+                                            <IconCheck />
+                                        </button>
+                                        <span className="inline-task-title">{task.title}</span>
+                                        <button className="task-delete" onClick={() => deleteTask(task.id)}>
+                                            <IconTrash />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* ADD SHOPPING ITEM */}
             <form className="add-item-form" onSubmit={addItem}>
                 <input
                     type="text"
@@ -328,6 +431,7 @@ export default function ListaDiaria() {
                 </button>
             </form>
 
+            {/* SHOPPING LIST */}
             {items.length === 0 ? (
                 <div className="empty-state">
                     <div className="empty-state-icon">

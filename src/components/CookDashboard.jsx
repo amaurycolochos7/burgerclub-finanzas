@@ -26,17 +26,6 @@ export default function CookDashboard() {
                 .limit(5)
 
             setLists(listsData || [])
-
-            // Fetch today's sales
-            const today = new Date().toISOString().split('T')[0]
-            const { data: salesData } = await supabase
-                .from('sales')
-                .select('amount')
-                .eq('user_id', user.id)
-                .eq('sale_date', today)
-
-            const total = (salesData || []).reduce((sum, s) => sum + parseFloat(s.amount), 0)
-            setSalesTotal(total)
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -92,12 +81,6 @@ export default function CookDashboard() {
                 </button>
             </div>
 
-            {/* Today's Sales Summary */}
-            <div className="cook-sales-summary">
-                <span className="cook-sales-label">Ventas de hoy</span>
-                <span className="cook-sales-amount">{formatCurrency(salesTotal)}</span>
-            </div>
-
             {/* Quick Actions */}
             <div className="cook-actions">
                 <button
@@ -106,13 +89,6 @@ export default function CookDashboard() {
                 >
                     <IconList />
                     <span>Nueva Lista</span>
-                </button>
-                <button
-                    className="cook-action-btn success"
-                    onClick={() => navigate('/cocina/ventas')}
-                >
-                    <IconPlus />
-                    <span>Agregar Venta</span>
                 </button>
             </div>
 

@@ -1,47 +1,29 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { IconChart, IconCart, IconHistory, IconEdit, IconCheck, IconClose, IconList } from './Icons'
+import { IconChart, IconCart, IconEdit, IconCheck, IconClose, IconArrowRight, IconList } from './Icons'
 
 export default function Home() {
     const navigate = useNavigate()
-    const { user, logout } = useAuth()
+    const { user } = useAuth()
     const [capital, setCapital] = useState(null)
     const [totalGasto, setTotalGasto] = useState(0)
     const [gastoHoy, setGastoHoy] = useState(0)
     const [loading, setLoading] = useState(true)
     const [editing, setEditing] = useState(false)
     const [editValue, setEditValue] = useState('')
-    const [menuOpen, setMenuOpen] = useState(false)
 
-    const touchStartX = useRef(0)
-    const touchEndX = useRef(0)
+    // Unified movements state
+    const [movements, setMovements] = useState([])
 
     useEffect(() => {
         fetchData()
     }, [])
 
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX
-    }
-
-    const handleTouchMove = (e) => {
-        touchEndX.current = e.touches[0].clientX
-    }
-
-    const handleTouchEnd = () => {
-        const swipeDistance = touchEndX.current - touchStartX.current
-        if (swipeDistance > 50 && touchStartX.current < 50) {
-            setMenuOpen(true)
-        }
-        if (swipeDistance < -50 && menuOpen) {
-            setMenuOpen(false)
-        }
-    }
-
     const fetchData = async () => {
         try {
+            // 1. Fetch Capital
             const { data: capitalData, error: capitalError } = await supabase
                 .from('capital')
                 .select('*')
@@ -55,20 +37,76 @@ export default function Home() {
                 setEditValue(capitalData?.amount?.toString() || '0')
             }
 
+            // 2. Fetch Shopping Items
             const { data: itemsData } = await supabase
                 .from('shopping_items')
-                .select('price, purchase_date')
+                .select('*')
+                .order('purchase_date', { ascending: false })
 
-            if (itemsData) {
-                const total = itemsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
-                setTotalGasto(total)
+            // 3. Fetch Payroll
+            const { data: payrollData } = await supabase
+                .from('payroll')
+                .select('*, users(name)')
+                .order('payment_date', { ascending: false })
 
-                const today = new Date().toISOString().split('T')[0]
-                const todayTotal = itemsData
-                    .filter(item => item.purchase_date === today)
-                    .reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
-                setGastoHoy(todayTotal)
-            }
+            // Calculate Totals
+            const shoppingTotal = (itemsData || []).reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
+            const payrollTotal = (payrollData || []).reduce((sum, pay) => sum + (parseFloat(pay.amount) || 0), 0)
+
+            const totalSpent = shoppingTotal + payrollTotal
+            setTotalGasto(totalSpent)
+
+            const today = new Date().toISOString().split('T')[0]
+            const shoppingToday = (itemsData || [])
+                .filter(item => item.purchase_date === today)
+                .reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
+
+            // Note: Payroll is typically not "daily expense" in the same way, but if needed we can add it.
+            // For now keeping "Hoy" as shopping expenses which is more relevant for daily operations.
+            setGastoHoy(shoppingToday)
+
+            // 4. Build Unified Movements List
+            const combinedMovements = []
+
+            // A. Group shopping items by date
+            const itemsByDate = (itemsData || []).reduce((acc, item) => {
+                const date = item.purchase_date
+                if (!acc[date]) {
+                    acc[date] = { count: 0, total: 0, items: [] }
+                }
+                acc[date].count += 1
+                acc[date].total += parseFloat(item.price) || 0
+                acc[date].items.push(item)
+                return acc
+            }, {})
+
+            Object.keys(itemsByDate).forEach(date => {
+                combinedMovements.push({
+                    type: 'shopping',
+                    id: `shopping-${date}`,
+                    date: date,
+                    title: 'Lista de Compras',
+                    amount: itemsByDate[date].total,
+                    details: `${itemsByDate[date].count} items`
+                })
+            })
+
+                // B. Add payroll records
+                (payrollData || []).forEach(pay => {
+                    combinedMovements.push({
+                        type: 'payroll',
+                        id: pay.id,
+                        date: pay.payment_date,
+                        title: `Pago Nómina: ${pay.users?.name}`,
+                        amount: parseFloat(pay.amount),
+                        details: pay.notes || 'Sin notas'
+                    })
+                })
+
+            // Sort by date desc
+            combinedMovements.sort((a, b) => new Date(b.date) - new Date(a.date))
+            setMovements(combinedMovements)
+
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -115,9 +153,17 @@ export default function Home() {
         }).format(amount || 0)
     }
 
+    const formatDate = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString('es-MX', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short'
+        })
+    }
+
     const saldo = (capital?.amount || 0) - totalGasto
     const isDeficit = saldo < 0
-    const percentUsed = capital?.amount ? ((totalGasto / capital.amount) * 100).toFixed(1) : 0
+    const percentUsed = capital?.amount ? Math.min((totalGasto / capital.amount) * 100, 100) : 0
 
     if (loading) {
         return (
@@ -130,168 +176,127 @@ export default function Home() {
     }
 
     return (
-        <div
-            className="app-wrapper"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-        >
-            <div className="swipe-indicator">
-                <div className="swipe-line"></div>
-            </div>
-
-            <div
-                className={`sidebar-overlay ${menuOpen ? 'open' : ''}`}
-                onClick={() => setMenuOpen(false)}
-            />
-
-            <div className={`sidebar ${menuOpen ? 'open' : ''}`}>
-                <button className="sidebar-close" onClick={() => setMenuOpen(false)}>
-                    <IconClose />
+        <div className="app-container trader-home">
+            {/* Header */}
+            <div className="trader-header">
+                <div>
+                    <p className="trader-welcome">Hola, {user?.name || 'Ismerai'}</p>
+                    <p className="trader-date">{new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                </div>
+                <button
+                    className="trader-edit-btn"
+                    onClick={() => setEditing(true)}
+                >
+                    <IconEdit />
                 </button>
-
-                <h2 className="sidebar-title">Menú</h2>
-
-                <div className="sidebar-nav">
-                    <button onClick={() => { setMenuOpen(false); navigate('/pendientes') }}>
-                        <IconList />
-                        <span>Listas Pendientes</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/tareas') }}>
-                        <IconCheck />
-                        <span>Pendientes del Día</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/movimientos') }}>
-                        <IconHistory />
-                        <span>Ingresos y Egresos</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/resumen') }}>
-                        <IconChart />
-                        <span>Resumen de Gastos</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/lista') }}>
-                        <IconCart />
-                        <span>Lista de Compras</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/historial') }}>
-                        <IconHistory />
-                        <span>Historial Completo</span>
-                    </button>
-                    <button onClick={() => { setMenuOpen(false); navigate('/usuarios') }}>
-                        <IconEdit />
-                        <span>Gestionar Cocineros</span>
-                    </button>
-                    <button className="sidebar-logout" onClick={() => { setMenuOpen(false); logout(); navigate('/login') }}>
-                        <span>Cerrar Sesión</span>
-                    </button>
-                </div>
             </div>
 
-            <div className="app-container trading-home">
-                {/* Header */}
-                <div className="trading-header">
-                    <p className="trading-greeting">Mi Cartera</p>
-                    <button
-                        className="edit-btn-small"
-                        onClick={() => setEditing(true)}
-                    >
-                        <IconEdit />
-                    </button>
-                </div>
-
-                {/* Main Balance Card */}
-                <div className="trading-balance">
-                    {editing ? (
-                        <div className="edit-capital-inline">
-                            <input
-                                type="number"
-                                className="input trading-input"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                placeholder="0.00"
-                                autoFocus
-                            />
-                            <button className="icon-btn success" onClick={updateCapital}>
-                                <IconCheck />
-                            </button>
-                            <button className="icon-btn" onClick={() => setEditing(false)}>
+            {/* Main Balance Card */}
+            <div className="trader-balance-card">
+                {editing ? (
+                    <div className="edit-capital-modal">
+                        <p className="edit-label">Editar Capital</p>
+                        <input
+                            type="number"
+                            className="edit-input"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            placeholder="0.00"
+                            autoFocus
+                        />
+                        <div className="edit-actions">
+                            <button className="edit-btn cancel" onClick={() => setEditing(false)}>
                                 <IconClose />
                             </button>
+                            <button className="edit-btn save" onClick={updateCapital}>
+                                <IconCheck />
+                            </button>
                         </div>
-                    ) : (
-                        <>
-                            <p className="balance-label">Saldo Disponible</p>
-                            <h1 className={`balance-amount ${isDeficit ? 'negative' : ''}`}>
-                                {isDeficit ? '- ' : ''}{formatCurrency(Math.abs(saldo))}
-                            </h1>
-                            <div className={`balance-badge ${isDeficit ? 'negative' : 'positive'}`}>
-                                {isDeficit ? '↓' : '↑'} {percentUsed}% usado
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                {/* Stats Grid */}
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <span className="stat-label">Capital</span>
-                        <span className="stat-value">{formatCurrency(capital?.amount)}</span>
                     </div>
-                    <div className="stat-card">
-                        <span className="stat-label">Gastado</span>
-                        <span className="stat-value expense">{formatCurrency(totalGasto)}</span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-label">Hoy</span>
-                        <span className="stat-value">{formatCurrency(gastoHoy)}</span>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="progress-section">
-                    <div className="progress-header">
-                        <span className="progress-label">Uso del presupuesto</span>
-                        <span className="progress-percent">{percentUsed}%</span>
-                    </div>
-                    <div className="progress-bar">
-                        <div
-                            className={`progress-fill ${parseFloat(percentUsed) > 80 ? 'warning' : ''} ${parseFloat(percentUsed) > 100 ? 'danger' : ''}`}
-                            style={{ width: `${Math.min(parseFloat(percentUsed), 100)}%` }}
-                        ></div>
-                    </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="quick-actions">
-                    <button
-                        className="action-card primary"
-                        onClick={() => navigate('/lista')}
-                    >
-                        <div className="action-icon">
-                            <IconCart />
-                        </div>
-                        <div className="action-text">
-                            <span className="action-title">Lista de Compras</span>
-                            <span className="action-subtitle">Agregar gastos</span>
-                        </div>
-                    </button>
-
-                    <button
-                        className="action-card"
-                        onClick={() => navigate('/resumen')}
-                    >
-                        <div className="action-icon">
-                            <IconChart />
-                        </div>
-                        <div className="action-text">
-                            <span className="action-title">Resumen</span>
-                            <span className="action-subtitle">Ver análisis</span>
-                        </div>
-                    </button>
-                </div>
-
-                <p className="swipe-hint">← Desliza para menú</p>
+                ) : (
+                    <>
+                        <p className="trader-balance-label">Saldo Disponible</p>
+                        <h1 className={`trader-balance-amount ${isDeficit ? 'negative' : ''}`}>
+                            {formatCurrency(saldo)}
+                        </h1>
+                    </>
+                )}
             </div>
+
+            {/* Stats Row */}
+            <div className="trader-stats-row">
+                <div className="trader-stat">
+                    <span className="trader-stat-label">Capital</span>
+                    <span className="trader-stat-value">{formatCurrency(capital?.amount)}</span>
+                </div>
+                <div className="trader-stat">
+                    <span className="trader-stat-label">Gastado</span>
+                    <span className="trader-stat-value negative">{formatCurrency(totalGasto)}</span>
+                </div>
+                <div className="trader-stat">
+                    <span className="trader-stat-label">Hoy</span>
+                    <span className="trader-stat-value">{formatCurrency(gastoHoy)}</span>
+                </div>
+            </div>
+
+            {/* Circular Progress */}
+            <div className="budget-gauge">
+                <div className="gauge-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle
+                            className="gauge-bg"
+                            cx="50"
+                            cy="50"
+                            r="42"
+                        />
+                        <circle
+                            className={`gauge-fill ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            strokeDasharray={`${percentUsed * 2.64} 264`}
+                        />
+                    </svg>
+                    <div className="gauge-center">
+                        <span className={`gauge-percent ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}>
+                            {percentUsed.toFixed(0)}%
+                        </span>
+                        <span className="gauge-label">usado</span>
+                    </div>
+                </div>
+                <div className="gauge-info">
+                    <div className="gauge-row">
+                        <span className="gauge-dot available"></span>
+                        <span className="gauge-text">Disponible</span>
+                        <span className="gauge-value">{formatCurrency(saldo)}</span>
+                    </div>
+                    <div className="gauge-row">
+                        <span className="gauge-dot spent"></span>
+                        <span className="gauge-text">Gastado</span>
+                        <span className="gauge-value">{formatCurrency(totalGasto)}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="trader-actions">
+                <button className="trader-action-btn primary action-full-height" onClick={() => navigate('/lista')}>
+                    <IconCart />
+                    <span>Lista de Compras</span>
+                </button>
+                <div className="split-action-column">
+                    <button className="trader-action-btn secondary small" onClick={() => navigate('/movimientos')}>
+                        <IconChart />
+                        <span>Movimientos</span>
+                    </button>
+                    <button className="trader-action-btn secondary small" onClick={() => navigate('/resumen')}>
+                        <IconList />
+                        <span>Resumen</span>
+                    </button>
+                </div>
+            </div>
+
+            <p className="swipe-hint">← Desliza para menú</p>
         </div>
     )
 }

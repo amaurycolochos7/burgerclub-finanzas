@@ -111,7 +111,7 @@ export default function DailyTasks() {
                 <button className="back-btn" onClick={() => navigate('/')}>
                     <IconArrowLeft />
                 </button>
-                <h1 className="header-title">Pendientes</h1>
+                <h1 className="header-title">Mis Pendientes</h1>
             </div>
 
             {/* Date Picker */}

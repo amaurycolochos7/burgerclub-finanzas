@@ -11,10 +11,31 @@ export function AuthProvider({ children }) {
         // Check for saved session
         const savedUser = localStorage.getItem('burgerclub_user')
         if (savedUser) {
-            setUser(JSON.parse(savedUser))
+            const parsed = JSON.parse(savedUser)
+            setUser(parsed)
+
+            // Refresh from DB to get latest name/role
+            refreshUser(parsed.id)
         }
         setLoading(false)
     }, [])
+
+    const refreshUser = async (userId) => {
+        try {
+            const { data } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single()
+
+            if (data) {
+                setUser(data)
+                localStorage.setItem('burgerclub_user', JSON.stringify(data))
+            }
+        } catch (e) {
+            console.error('Error refreshing user', e)
+        }
+    }
 
     const login = async (email, password) => {
         try {
