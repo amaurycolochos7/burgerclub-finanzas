@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { IconChart, IconCart, IconHistory, IconEdit, IconCheck, IconClose } from './Icons'
+import { useAuth } from '../context/AuthContext'
+import { IconChart, IconCart, IconHistory, IconEdit, IconCheck, IconClose, IconList } from './Icons'
 
 export default function Home() {
     const navigate = useNavigate()
+    const { user, logout } = useAuth()
     const [capital, setCapital] = useState(null)
     const [totalGasto, setTotalGasto] = useState(0)
     const [gastoHoy, setGastoHoy] = useState(0)
@@ -151,6 +153,10 @@ export default function Home() {
                 <h2 className="sidebar-title">Menú</h2>
 
                 <div className="sidebar-nav">
+                    <button onClick={() => { setMenuOpen(false); navigate('/pendientes') }}>
+                        <IconList />
+                        <span>Listas Pendientes</span>
+                    </button>
                     <button onClick={() => { setMenuOpen(false); navigate('/resumen') }}>
                         <IconChart />
                         <span>Resumen de Gastos</span>
@@ -162,6 +168,13 @@ export default function Home() {
                     <button onClick={() => { setMenuOpen(false); navigate('/historial') }}>
                         <IconHistory />
                         <span>Historial Completo</span>
+                    </button>
+                    <button onClick={() => { setMenuOpen(false); navigate('/usuarios') }}>
+                        <IconEdit />
+                        <span>Gestionar Cocineros</span>
+                    </button>
+                    <button className="sidebar-logout" onClick={() => { setMenuOpen(false); logout(); navigate('/login') }}>
+                        <span>Cerrar Sesión</span>
                     </button>
                 </div>
             </div>

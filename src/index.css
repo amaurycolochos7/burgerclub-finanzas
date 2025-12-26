@@ -1522,3 +1522,480 @@ h6 {
   font-size: 0.7rem;
   color: var(--text-muted);
 }
+
+/* ============================================
+   LOGIN STYLES
+   ============================================ */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-body);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.login-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.login-error {
+  padding: var(--spacing-md);
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   COOK DASHBOARD STYLES
+   ============================================ */
+
+.cook-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.cook-greeting {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cook-role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.btn-text {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: var(--spacing-sm);
+}
+
+.btn-text:hover {
+  color: var(--danger);
+}
+
+.cook-main-action {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  margin-bottom: var(--spacing-xl);
+}
+
+.cook-action-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.cook-action-icon svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.cook-action-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.cook-action-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+}
+
+.cook-action-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cook-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.cook-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.cook-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.btn-text-small {
+  background: transparent;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.cook-empty {
+  text-align: center;
+  padding: var(--spacing-lg);
+  color: var(--text-muted);
+}
+
+.cook-lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.cook-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+}
+
+.cook-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cook-list-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cook-list-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Badges */
+.badge {
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.badge-approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+}
+
+.badge-rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+/* ============================================
+   KITCHEN LIST FORM STYLES
+   ============================================ */
+
+.add-item-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.add-item-row .input {
+  flex: 1;
+}
+
+.input-quantity {
+  max-width: 100px;
+}
+
+.kitchen-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.kitchen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.kitchen-item-info {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.kitchen-item-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kitchen-item-qty {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   MY LISTS STYLES
+   ============================================ */
+
+.my-lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.my-list-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.my-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.my-list-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.my-list-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.my-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.my-list-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.875rem;
+}
+
+.my-list-item:last-child {
+  border-bottom: none;
+}
+
+.item-qty {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   PENDING LISTS (ADMIN) STYLES
+   ============================================ */
+
+.pending-lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.pending-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.pending-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.pending-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.pending-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.pending-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+}
+
+.pending-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.pending-qty {
+  color: var(--text-muted);
+}
+
+.pending-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.btn-success {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.btn-success:hover {
+  background: #059669;
+}
+
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* ============================================
+   USER MANAGEMENT STYLES
+   ============================================ */
+
+.user-form {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.user-form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Sidebar logout button */
+.sidebar-logout {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-top: var(--spacing-md) !important;
+  color: var(--danger) !important;
+}
