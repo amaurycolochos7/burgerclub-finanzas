@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { IconChart, IconCart, IconEdit, IconCheck, IconClose, IconArrowRight, IconList } from './Icons'
+import { IconChart, IconCart, IconEdit, IconCheck, IconClose, IconArrowRight, IconList, IconSend } from './Icons'
 
 export default function Home() {
     const navigate = useNavigate()
@@ -313,9 +313,9 @@ export default function Home() {
                         <IconChart />
                         <span>Movimientos</span>
                     </button>
-                    <button className="trader-action-btn secondary small" onClick={() => navigate('/resumen')}>
-                        <IconList />
-                        <span>Resumen</span>
+                    <button className="trader-action-btn secondary small" onClick={() => navigate('/envios-dinero')}>
+                        <IconSend />
+                        <span>Envíos de Dinero</span>
                     </button>
                 </div>
             </div>

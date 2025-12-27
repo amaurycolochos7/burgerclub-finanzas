@@ -4582,7 +4582,7 @@ h6 {
 
 .trader-stats-row.simple {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.1fr 1.1fr 0.8fr;
   gap: var(--spacing-sm);
 }
 
