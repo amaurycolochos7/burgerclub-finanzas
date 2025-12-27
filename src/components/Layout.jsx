@@ -86,14 +86,13 @@ export default function Layout({ children }) {
                                 <IconList />
                                 <span>Listas de Cocina</span>
                             </button>
-                            <button onClick={() => navTo('/tareas')}>
-                                <IconCheck />
-                                <span>Mis Pendientes</span>
-                            </button>
-
                             <button onClick={() => navTo('/lista')}>
                                 <IconCart />
                                 <span>Lista de Compras</span>
+                            </button>
+                            <button onClick={() => navTo('/tareas')}>
+                                <IconCheck />
+                                <span>Mis Pendientes</span>
                             </button>
                             <button onClick={() => navTo('/resumen')}>
                                 <IconChart />
