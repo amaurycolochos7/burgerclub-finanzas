@@ -140,7 +140,7 @@ export default function Movements() {
 
     const toggleExpand = (id, type, date) => {
         if (type === 'shopping') {
-            navigate(`/lista?date=${date}`)
+            navigate(`/lista?fecha=${date}`)
         } else {
             setExpandedId(expandedId === id ? null : id)
         }
