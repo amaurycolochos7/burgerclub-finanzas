@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { IconArrowLeft, IconCart, IconCheck, IconClose } from './Icons'
+import { IconArrowLeft, IconCart, IconCheck, IconClose, IconInbox } from './Icons'
 
 export default function Movements() {
     const navigate = useNavigate()
@@ -66,7 +66,29 @@ export default function Movements() {
                     date: pay.payment_date,
                     title: `Pago Nómina: ${pay.users?.name}`,
                     amount: parseFloat(pay.amount),
-                    details: pay.notes || 'Sin notas'
+                    details: pay.notes || 'Sin notas',
+                    isIncome: false
+                })
+            })
+
+            // C. Fetch accepted night sales (income)
+            const { data: nightSalesData } = await supabase
+                .from('night_sales')
+                .select('*, users:cook_id(name)')
+                .eq('status', 'accepted')
+                .order('accepted_at', { ascending: false })
+
+            const safeNightSales = Array.isArray(nightSalesData) ? nightSalesData : []
+
+            safeNightSales.forEach(sale => {
+                combinedMovements.push({
+                    type: 'night_sale',
+                    id: sale.id,
+                    date: sale.accepted_at,
+                    title: `Envío de: ${sale.users?.name || 'Cocinero'}`,
+                    amount: parseFloat(sale.total_amount),
+                    details: sale.description || 'Sin detalles',
+                    isIncome: true
                 })
             })
 
@@ -114,6 +136,16 @@ export default function Movements() {
         })
     }
 
+    const [expandedId, setExpandedId] = useState(null)
+
+    const toggleExpand = (id, type, date) => {
+        if (type === 'shopping') {
+            navigate(`/lista?date=${date}`)
+        } else {
+            setExpandedId(expandedId === id ? null : id)
+        }
+    }
+
     if (loading) {
         return (
             <div className="app-container">
@@ -136,38 +168,56 @@ export default function Movements() {
                     <div className="empty-state">No hay movimientos registrados</div>
                 ) : (
                     movements.map(mov => (
-                        <div
-                            key={mov.id}
-                            className="movement-card"
-                            onClick={() => {
-                                if (mov.type === 'shopping') {
-                                    navigate(`/lista?date=${mov.date}`)
-                                } else {
-                                    alert(`Pago a: ${mov.title}\nFecha: ${formatDate(mov.date)}\nMonto: ${formatCurrency(mov.amount)}\nNota: ${mov.details}`)
-                                }
-                            }}
-                        >
-                            <div className="movement-icon">
-                                {mov.type === 'shopping' ? <IconCart /> : <IconCheck />}
+                        <div key={mov.id} className={`movement-card-wrapper ${expandedId === mov.id ? 'expanded' : ''}`}>
+                            <div
+                                className="movement-card"
+                                onClick={() => toggleExpand(mov.id, mov.type, mov.date)}
+                            >
+                                <div className="movement-icon">
+                                    {mov.type === 'shopping' ? <IconCart /> :
+                                        mov.type === 'night_sale' ? <IconInbox /> : <IconCheck />}
+                                </div>
+                                <div className="movement-info">
+                                    <span className="movement-title">{mov.title}</span>
+                                    <span className="movement-date capitalize">{formatDate(mov.date)}</span>
+                                </div>
+                                <div className={`movement-amount ${mov.isIncome ? 'positive' : 'negative'}`}>
+                                    {mov.isIncome ? '+' : '-'}{formatCurrency(mov.amount)}
+                                </div>
+                                {mov.type === 'payroll' && (
+                                    <button
+                                        className="delete-btn-small"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDelete(mov.id)
+                                        }}
+                                        title="Eliminar movimiento"
+                                    >
+                                        <IconClose />
+                                    </button>
+                                )}
                             </div>
-                            <div className="movement-info">
-                                <span className="movement-title">{mov.title}</span>
-                                <span className="movement-date capitalize">{formatDate(mov.date)}</span>
-                            </div>
-                            <div className="movement-amount negative">
-                                -{formatCurrency(mov.amount)}
-                            </div>
-                            {mov.type === 'payroll' && (
-                                <button
-                                    className="delete-btn-small"
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleDelete(mov.id)
-                                    }}
-                                    title="Eliminar movimiento"
-                                >
-                                    <IconClose />
-                                </button>
+
+                            {/* Expanded Details Panel */}
+                            {expandedId === mov.id && (
+                                <div className="movement-details">
+                                    <div className="movement-details-row">
+                                        <span className="movement-details-label">Monto:</span>
+                                        <span className={`movement-details-value ${mov.isIncome ? 'positive' : 'negative'}`}>
+                                            {mov.isIncome ? '+' : '-'}{formatCurrency(mov.amount)}
+                                        </span>
+                                    </div>
+                                    <div className="movement-details-row">
+                                        <span className="movement-details-label">Fecha:</span>
+                                        <span className="movement-details-value capitalize">{formatDate(mov.date)}</span>
+                                    </div>
+                                    {mov.details && (
+                                        <div className="movement-details-notes">
+                                            <span className="movement-details-label">Detalles:</span>
+                                            <p className="movement-details-text">{mov.details}</p>
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
                     ))

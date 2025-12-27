@@ -39,14 +39,27 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            const { data, error } = await supabase
+            const normalizedEmail = email.trim().toLowerCase()
+
+            // First, find the user by email only
+            const { data: userByEmail, error: emailError } = await supabase
                 .from('users')
                 .select('*')
-                .eq('email', email)
-                .eq('password', password)
+                .eq('email', normalizedEmail)
                 .single()
 
-            if (error || !data) {
+            if (emailError || !userByEmail) {
+                return { error: 'Credenciales incorrectas' }
+            }
+
+            // Compare passwords directly
+            if (password !== userByEmail.password) {
+                return { error: 'Credenciales incorrectas' }
+            }
+
+            const data = userByEmail
+
+            if (!data) {
                 return { error: 'Credenciales incorrectas' }
             }
 

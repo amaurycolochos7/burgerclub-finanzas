@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { IconPlus, IconList } from './Icons'
+import { IconPlus, IconList, IconSend, IconCheck } from './Icons'
 
 export default function CookDashboard() {
     const navigate = useNavigate()
@@ -89,6 +89,20 @@ export default function CookDashboard() {
                 >
                     <IconList />
                     <span>Nueva Lista</span>
+                </button>
+                <button
+                    className="cook-action-btn sales"
+                    onClick={() => navigate('/cocina/ventas-noche')}
+                >
+                    <IconSend />
+                    <span>Enviar Ventas</span>
+                </button>
+                <button
+                    className="cook-action-btn inventory"
+                    onClick={() => navigate('/cocina/inventario')}
+                >
+                    <IconCheck />
+                    <span>Inventario</span>
                 </button>
             </div>
 

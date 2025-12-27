@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { IconChart, IconCart, IconHistory, IconEdit, IconCheck, IconClose, IconList, IconMoney } from './Icons'
+import { IconChart, IconCart, IconHistory, IconEdit, IconCheck, IconClose, IconList, IconMoney, IconSend, IconInbox } from './Icons'
 
 export default function Layout({ children }) {
     const navigate = useNavigate()
@@ -103,6 +103,10 @@ export default function Layout({ children }) {
                                 <IconMoney />
                                 <span>Nómina</span>
                             </button>
+                            <button onClick={() => navTo('/envios-dinero')}>
+                                <IconInbox />
+                                <span>Envíos de Dinero</span>
+                            </button>
                             <button onClick={() => navTo('/usuarios')}>
                                 <IconEdit />
                                 <span>Gestionar Cocineros</span>
@@ -121,6 +125,10 @@ export default function Layout({ children }) {
                             <button onClick={() => navTo('/cocina/pagos')}>
                                 <IconMoney />
                                 <span>Mis Pagos</span>
+                            </button>
+                            <button onClick={() => navTo('/cocina/ventas-noche')}>
+                                <IconSend />
+                                <span>Ventas de la Noche</span>
                             </button>
                             <button onClick={() => navTo('/cocina/mis-listas')}>
                                 <IconHistory />

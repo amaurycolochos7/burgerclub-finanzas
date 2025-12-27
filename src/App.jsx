@@ -18,6 +18,9 @@ import DailyTasks from './components/DailyTasks'
 import Payroll from './components/Payroll'
 import CookPayments from './components/CookPayments'
 import Movements from './components/Movements'
+import SendNightSales from './components/SendNightSales'
+import NightSalesAdmin from './components/NightSalesAdmin'
+import InventoryChecklist from './components/InventoryChecklist'
 import './index.css'
 
 // Protected route for admin
@@ -70,12 +73,15 @@ function AppRoutes() {
         <Route path="/tareas" element={<AdminRoute><DailyTasks /></AdminRoute>} />
         <Route path="/nomina" element={<AdminRoute><Payroll /></AdminRoute>} />
         <Route path="/movimientos" element={<AdminRoute><Movements /></AdminRoute>} />
+        <Route path="/envios-dinero" element={<AdminRoute><NightSalesAdmin /></AdminRoute>} />
 
         {/* Cook routes */}
         <Route path="/cocina" element={<CookRoute><CookDashboard /></CookRoute>} />
         <Route path="/cocina/nueva-lista" element={<CookRoute><CreateKitchenList /></CookRoute>} />
         <Route path="/cocina/mis-listas" element={<CookRoute><MyLists /></CookRoute>} />
         <Route path="/cocina/pagos" element={<CookRoute><CookPayments /></CookRoute>} />
+        <Route path="/cocina/ventas-noche" element={<CookRoute><SendNightSales /></CookRoute>} />
+        <Route path="/cocina/inventario" element={<CookRoute><InventoryChecklist /></CookRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<RoleRedirect />} />

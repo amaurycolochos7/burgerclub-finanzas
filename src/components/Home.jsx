@@ -10,6 +10,7 @@ export default function Home() {
     const [capital, setCapital] = useState(null)
     const [totalGasto, setTotalGasto] = useState(0)
     const [gastoHoy, setGastoHoy] = useState(0)
+    const [incomeTotal, setIncomeTotal] = useState(0)
     const [loading, setLoading] = useState(true)
     const [editing, setEditing] = useState(false)
     const [editValue, setEditValue] = useState('')
@@ -64,6 +65,20 @@ export default function Home() {
             // Note: Payroll is typically not "daily expense" in the same way, but if needed we can add it.
             // For now keeping "Hoy" as shopping expenses which is more relevant for daily operations.
             setGastoHoy(shoppingToday)
+
+            // 5. Fetch accepted night sales from last 35 hours (income)
+            const thirtyFiveHoursAgo = new Date()
+            thirtyFiveHoursAgo.setHours(thirtyFiveHoursAgo.getHours() - 35)
+
+            const { data: incomeData } = await supabase
+                .from('night_sales')
+                .select('total_amount, accepted_at')
+                .eq('status', 'accepted')
+                .gte('accepted_at', thirtyFiveHoursAgo.toISOString())
+                .order('accepted_at', { ascending: true })
+
+            const totalIncome = (incomeData || []).reduce((sum, sale) => sum + (parseFloat(sale.total_amount) || 0), 0)
+            setIncomeTotal(totalIncome)
 
             // 4. Build Unified Movements List
             const combinedMovements = []
@@ -229,19 +244,29 @@ export default function Home() {
                 )}
             </div>
 
-            {/* Stats Row */}
-            <div className="trader-stats-row">
+            {/* Stats Row - Simplified */}
+            <div className="trader-stats-row simple">
                 <div className="trader-stat">
-                    <span className="trader-stat-label">Capital</span>
-                    <span className="trader-stat-value">{formatCurrency(capital?.amount)}</span>
+                    <span className="trader-stat-label">DISPONIBLE</span>
+                    <span className={`trader-stat-value ${isDeficit ? 'negative' : 'positive'}`}>{formatCurrency(saldo)}</span>
                 </div>
                 <div className="trader-stat">
-                    <span className="trader-stat-label">Gastado</span>
+                    <span className="trader-stat-label">GASTADO</span>
                     <span className="trader-stat-value negative">{formatCurrency(totalGasto)}</span>
                 </div>
-                <div className="trader-stat">
-                    <span className="trader-stat-label">Hoy</span>
-                    <span className="trader-stat-value">{formatCurrency(gastoHoy)}</span>
+                <div className="trader-stat income-stat">
+                    <span className="trader-stat-label">INGRESOS 35H</span>
+                    <div className="income-chart-row">
+                        <span className="trader-stat-value positive">{formatCurrency(incomeTotal)}</span>
+                        <svg className="mini-chart" viewBox="0 0 40 20" preserveAspectRatio="none">
+                            <polyline
+                                fill="none"
+                                stroke="var(--success)"
+                                strokeWidth="2"
+                                points="0,18 8,14 16,16 24,10 32,8 40,4"
+                            />
+                        </svg>
+                    </div>
                 </div>
             </div>
 

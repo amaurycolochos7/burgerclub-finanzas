@@ -4114,6 +4114,80 @@ h6 {
   color: var(--danger);
 }
 
+.movement-amount.positive {
+  color: var(--success);
+}
+
+/* Expandable Movement Details */
+.movement-card-wrapper {
+  margin-bottom: var(--spacing-sm);
+}
+
+.movement-card-wrapper.expanded .movement-card {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.movement-details {
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.movement-details-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.movement-details-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.movement-details-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.movement-details-value.positive {
+  color: var(--success);
+}
+
+.movement-details-value.negative {
+  color: var(--danger);
+}
+
+.movement-details-notes {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.movement-details-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
 .delete-btn-small {
   width: 28px;
   height: 28px;
@@ -4134,4 +4208,404 @@ h6 {
   background: rgba(239, 68, 68, 0.1);
   color: var(--danger);
   opacity: 1;
+}
+
+/* ==========================================
+   NIGHT SALES STYLES
+   ========================================== */
+
+/* Night Sales Form */
+.night-sales-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: var(--spacing-lg);
+}
+
+.night-sales-form .textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Sales History */
+.sales-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sales-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sales-history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sales-history-amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sales-history-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sales-history-detail {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Night Sales Admin */
+.night-sales-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.night-sales-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.night-sales-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.night-sale-card {
+  padding: var(--spacing-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-normal);
+}
+
+.night-sale-card.pending {
+  border-left: 3px solid var(--accent-primary);
+}
+
+.night-sale-card.accepted {
+  border-left: 3px solid var(--success);
+  opacity: 0.8;
+}
+
+.night-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.night-sale-cook {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.night-sale-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.night-sale-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.night-sale-amount.positive {
+  color: var(--success);
+}
+
+.night-sale-detail {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.night-sale-description {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.night-sale-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* Success button */
+.btn-success {
+  background: linear-gradient(135deg, var(--success) 0%, #2dd4bf 100%);
+  color: white;
+  flex: 1;
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Danger outline button */
+.btn-danger-outline {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.btn-danger-outline:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-small {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.85rem;
+  min-height: 36px;
+}
+
+/* Cook Dashboard Sales Button */
+.cook-action-btn.sales {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.cook-action-btn.sales:hover {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+}
+
+/* Cook Actions Two Buttons */
+.cook-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.cook-action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  min-height: 100px;
+}
+
+.cook-action-btn.primary {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.cook-action-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* Inventory Button Color */
+.cook-action-btn.inventory {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.cook-action-btn.inventory:hover {
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+}
+
+/* 3 buttons in a row - make them smaller */
+.cook-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+/* ==========================================
+   INVENTORY CHECKLIST STYLES
+   ========================================== */
+
+.inventory-progress {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.inventory-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.inventory-progress-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.inventory-progress-percent {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.inventory-progress-bar {
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.inventory-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), #2dd4bf);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.inventory-last-saved {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: var(--spacing-sm);
+}
+
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.inventory-category {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+}
+
+.inventory-category-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.inventory-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.inventory-item:hover {
+  background: var(--bg-hover);
+}
+
+.inventory-item.checked {
+  opacity: 0.6;
+}
+
+.inventory-item.checked .inventory-item-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.inventory-checkbox {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.inventory-checkbox.checked {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.inventory-checkbox svg {
+  width: 14px;
+  height: 14px;
+}
+
+.inventory-item-name {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+/* ==========================================
+   MINI CHART (Trading Style)
+   ========================================== */
+
+.trader-stats-row.simple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.income-stat {
+  position: relative;
+}
+
+.income-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mini-chart {
+  width: 40px;
+  height: 20px;
+  opacity: 0.9;
+}
+
+.trader-stat-value.positive {
+  color: var(--success);
+}
+
+.trader-stat-value.negative {
+  color: var(--danger);
 }
