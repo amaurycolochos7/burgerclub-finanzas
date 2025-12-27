@@ -19,7 +19,7 @@ export default function ListaDiaria() {
     const [editingField, setEditingField] = useState(null)
     const [editValue, setEditValue] = useState('')
 
-    const urlDate = searchParams.get('fecha')
+    const urlDate = searchParams.get('fecha') || searchParams.get('date')
     const [selectedDate, setSelectedDate] = useState(urlDate || new Date().toISOString().split('T')[0])
 
     useEffect(() => {
