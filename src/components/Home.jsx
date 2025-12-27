@@ -50,9 +50,19 @@ export default function Home() {
                 .select('*, users(name)')
                 .order('payment_date', { ascending: false })
 
-            // Calculate Totals
-            const shoppingTotal = (itemsData || []).reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
-            const payrollTotal = (payrollData || []).reduce((sum, pay) => sum + (parseFloat(pay.amount) || 0), 0)
+            // Get current month start date (1st day of current month)
+            const now = new Date()
+            const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+            const currentMonthStartStr = currentMonthStart.toISOString().split('T')[0]
+
+            // Calculate Totals - ONLY for current month
+            const shoppingTotal = (itemsData || [])
+                .filter(item => item.purchase_date >= currentMonthStartStr)
+                .reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
+
+            const payrollTotal = (payrollData || [])
+                .filter(pay => pay.payment_date >= currentMonthStartStr)
+                .reduce((sum, pay) => sum + (parseFloat(pay.amount) || 0), 0)
 
             const totalSpent = shoppingTotal + payrollTotal
             setTotalGasto(totalSpent)
@@ -244,11 +254,33 @@ export default function Home() {
                 )}
             </div>
 
-            {/* Stats Row - Simplified */}
+            {/* Stats Row - Con gauge en lugar de Disponible */}
             <div className="trader-stats-row simple">
-                <div className="trader-stat">
-                    <span className="trader-stat-label">DISPONIBLE</span>
-                    <span className={`trader-stat-value ${isDeficit ? 'negative' : 'positive'}`}>{formatCurrency(saldo)}</span>
+                {/* Gauge en lugar de texto DISPONIBLE */}
+                <div className="trader-stat gauge-stat">
+                    <div className="mini-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle
+                                className="gauge-bg"
+                                cx="50"
+                                cy="50"
+                                r="42"
+                            />
+                            <circle
+                                className={`gauge-fill ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="42"
+                                strokeDasharray={`${percentUsed * 2.64} 264`}
+                            />
+                        </svg>
+                        <div className="mini-gauge-center">
+                            <span className={`mini-gauge-percent ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}>
+                                {percentUsed.toFixed(0)}%
+                            </span>
+                            <span className="mini-gauge-label">usado</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="trader-stat">
                     <span className="trader-stat-label">GASTADO</span>
@@ -263,61 +295,52 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Circular Progress */}
-            <div className="budget-gauge">
-                <div className="gauge-circle">
-                    <svg viewBox="0 0 100 100">
-                        <circle
-                            className="gauge-bg"
-                            cx="50"
-                            cy="50"
-                            r="42"
-                        />
-                        <circle
-                            className={`gauge-fill ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}
-                            cx="50"
-                            cy="50"
-                            r="42"
-                            strokeDasharray={`${percentUsed * 2.64} 264`}
-                        />
-                    </svg>
-                    <div className="gauge-center">
-                        <span className={`gauge-percent ${percentUsed > 80 ? 'warning' : ''} ${percentUsed >= 100 ? 'danger' : ''}`}>
-                            {percentUsed.toFixed(0)}%
-                        </span>
-                        <span className="gauge-label">usado</span>
-                    </div>
-                </div>
-                <div className="gauge-info">
-                    <div className="gauge-row">
-                        <span className="gauge-dot available"></span>
-                        <span className="gauge-text">Disponible</span>
-                        <span className="gauge-value">{formatCurrency(saldo)}</span>
-                    </div>
-                    <div className="gauge-row">
-                        <span className="gauge-dot spent"></span>
-                        <span className="gauge-text">Gastado</span>
-                        <span className="gauge-value">{formatCurrency(totalGasto)}</span>
-                    </div>
-                </div>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="trader-actions">
-                <button className="trader-action-btn primary action-full-height" onClick={() => navigate('/lista')}>
-                    <IconCart />
-                    <span>Lista de Compras</span>
-                </button>
-                <div className="split-action-column">
-                    <button className="trader-action-btn secondary small" onClick={() => navigate('/movimientos')}>
-                        <IconChart />
-                        <span>Movimientos</span>
-                    </button>
-                    <button className="trader-action-btn secondary small" onClick={() => navigate('/envios-dinero')}>
-                        <IconSend />
-                        <span>Envíos de Dinero</span>
-                    </button>
+            {/* Main Action - Full Width */}
+            <button className="main-action-card" onClick={() => navigate('/lista')}>
+                <div className="main-action-content">
+                    <div className="main-action-icon">
+                        <IconCart />
+                    </div>
+                    <div className="main-action-text">
+                        <span className="main-action-title">Lista de Compras</span>
+                        <span className="main-action-subtitle">Agregar productos</span>
+                    </div>
                 </div>
+                <IconArrowRight />
+            </button>
+
+            {/* Quick Access Row */}
+            <div className="quick-access-row">
+                <button className="quick-access-item" onClick={() => navigate('/pendientes')}>
+                    <div className="quick-access-icon orange">
+                        <IconList />
+                    </div>
+                    <div className="quick-access-text">
+                        <span className="quick-access-title">Cocina</span>
+                        <span className="quick-access-desc">Listas pendientes</span>
+                    </div>
+                </button>
+
+                <button className="quick-access-item" onClick={() => navigate('/movimientos')}>
+                    <div className="quick-access-icon green">
+                        <IconChart />
+                    </div>
+                    <div className="quick-access-text">
+                        <span className="quick-access-title">Movimientos</span>
+                        <span className="quick-access-desc">Gastos e ingresos</span>
+                    </div>
+                </button>
+
+                <button className="quick-access-item" onClick={() => navigate('/envios-dinero')}>
+                    <div className="quick-access-icon purple">
+                        <IconSend />
+                    </div>
+                    <div className="quick-access-text">
+                        <span className="quick-access-title">Envíos</span>
+                        <span className="quick-access-desc">Control de envíos</span>
+                    </div>
+                </button>
             </div>
 
             <p className="swipe-hint">← Desliza para menú</p>
