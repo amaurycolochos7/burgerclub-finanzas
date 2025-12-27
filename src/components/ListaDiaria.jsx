@@ -9,6 +9,7 @@ export default function ListaDiaria() {
     const [items, setItems] = useState([])
     const [tasks, setTasks] = useState([])
     const [capital, setCapital] = useState(0)
+    const [globalSpent, setGlobalSpent] = useState(0)
     const [loading, setLoading] = useState(true)
     const [newItemName, setNewItemName] = useState('')
     const [newItemPrice, setNewItemPrice] = useState('')
@@ -38,6 +39,7 @@ export default function ListaDiaria() {
                 setCapital(capitalData.amount)
             }
 
+            // 1. Fetch current list items
             const { data: itemsData } = await supabase
                 .from('shopping_items')
                 .select('*')
@@ -46,6 +48,19 @@ export default function ListaDiaria() {
                 .order('created_at', { ascending: false })
 
             setItems(itemsData || [])
+
+            // 2. Fetch GLOBAL expenses for accurate balance (Disponible)
+            const { data: allShopping } = await supabase
+                .from('shopping_items')
+                .select('price')
+
+            const { data: allPayroll } = await supabase
+                .from('payroll')
+                .select('amount')
+
+            const totalShopping = (allShopping || []).reduce((sum, i) => sum + (parseFloat(i.price) || 0), 0)
+            const totalPayroll = (allPayroll || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+            setGlobalSpent(totalShopping + totalPayroll)
 
             // Fetch tasks for this date
             const { data: tasksData } = await supabase
@@ -243,7 +258,8 @@ export default function ListaDiaria() {
     }
 
     const totalGasto = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0)
-    const saldo = capital - totalGasto
+    // Global Available Balance = Total Capital - Global Spent
+    const saldo = capital - globalSpent
 
     const pendingItems = items.filter(i => !i.is_completed)
     const completedItems = items.filter(i => i.is_completed)
@@ -326,20 +342,17 @@ export default function ListaDiaria() {
                 <p className="date-display">{formatDateDisplay(selectedDate)}</p>
             </div>
 
-            <div className="balance-summary">
+            {/* Simpler Stats Row matched to Dashboard */}
+            <div className="balance-summary two-columns">
                 <div className="balance-item">
-                    <p className="balance-item-label">Capital</p>
-                    <p className="balance-item-value">{formatCurrency(capital)}</p>
-                </div>
-                <div className="balance-item">
-                    <p className="balance-item-label">Gasto</p>
-                    <p className="balance-item-value">{formatCurrency(totalGasto)}</p>
-                </div>
-                <div className="balance-item">
-                    <p className="balance-item-label">Saldo</p>
+                    <p className="balance-item-label">DISPONIBLE</p>
                     <p className={`balance-item-value ${saldo < 0 ? 'balance-negative' : 'balance-positive'}`}>
-                        {saldo < 0 ? '- ' : ''}{formatCurrency(Math.abs(saldo))}
+                        {formatCurrency(saldo)}
                     </p>
+                </div>
+                <div className="balance-item">
+                    <p className="balance-item-label">ESTA LISTA</p>
+                    <p className="balance-item-value balance-neutral">{formatCurrency(totalGasto)}</p>
                 </div>
             </div>
 

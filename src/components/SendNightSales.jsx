@@ -109,6 +109,12 @@ export default function SendNightSales() {
         return badges[status] || badges.pending
     }
 
+    const [expandedId, setExpandedId] = useState(null)
+
+    const toggleExpand = (id) => {
+        setExpandedId(expandedId === id ? null : id)
+    }
+
     if (loading) {
         return (
             <div className="app-container">
@@ -182,24 +188,43 @@ export default function SendNightSales() {
                     <div className="sales-history">
                         {history.map(sale => {
                             const badge = getStatusBadge(sale.status)
+                            const isExpanded = expandedId === sale.id
+
                             return (
-                                <div key={sale.id} className="sales-history-item">
+                                <div
+                                    key={sale.id}
+                                    className={`sales-history-item ${isExpanded ? 'expanded' : ''}`}
+                                    onClick={() => toggleExpand(sale.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className="sales-history-info">
-                                        <span className="sales-history-amount">
-                                            {formatCurrency(sale.total_amount)}
-                                        </span>
+                                        <div className="sales-history-top">
+                                            <span className="sales-history-amount">
+                                                {formatCurrency(sale.total_amount)}
+                                            </span>
+                                            <span className={`badge ${badge.class}`}>{badge.text}</span>
+                                        </div>
+
                                         <span className="sales-history-date">
                                             {formatDate(sale.created_at)}
                                         </span>
+
                                         {sale.description && (
-                                            <span className="sales-history-detail">
-                                                {sale.description.length > 40
-                                                    ? sale.description.substring(0, 40) + '...'
-                                                    : sale.description}
-                                            </span>
+                                            <div className="sales-history-detail-container">
+                                                <span className={`sales-history-detail ${isExpanded ? 'full' : 'truncated'}`}>
+                                                    {isExpanded
+                                                        ? sale.description
+                                                        : (sale.description.length > 40
+                                                            ? sale.description.substring(0, 40) + '...'
+                                                            : sale.description)}
+                                                </span>
+                                                {sale.description.length > 40 && !isExpanded && (
+                                                    <span className="expand-hint">(ver más)</span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                    <span className={`badge ${badge.class}`}>{badge.text}</span>
+                                    {/* Arrow icon could go here if needed */}
                                 </div>
                             )
                         })}
