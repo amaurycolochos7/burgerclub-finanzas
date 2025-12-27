@@ -4577,7 +4577,7 @@ h6 {
 }
 
 /* ==========================================
-   MINI CHART (Trading Style)
+   MINI CHART (Trading Style) - Animated
    ========================================== */
 
 .trader-stats-row.simple {
@@ -4590,16 +4590,71 @@ h6 {
   position: relative;
 }
 
-.income-chart-row {
+.income-chart-row,
+.income-display {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
+}
+
+.income-indicator {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--success);
+  animation: pulseUp 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseUp {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateY(-3px);
+  }
 }
 
 .mini-chart {
-  width: 40px;
-  height: 20px;
-  opacity: 0.9;
+  width: 50px;
+  height: 24px;
+  filter: drop-shadow(0 0 4px var(--success));
+}
+
+.mini-chart polyline {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawLine 1.5s ease-out forwards, pulseGlow 2s ease-in-out infinite 1.5s;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px var(--success));
+    opacity: 1;
+  }
+
+  50% {
+    filter: drop-shadow(0 0 8px var(--success));
+    opacity: 0.8;
+  }
+}
+
+/* Add a subtle gradient fill under the line */
+.mini-chart-gradient {
+  fill: url(#incomeGradient);
+  opacity: 0.3;
 }
 
 .trader-stat-value.positive {
@@ -4608,4 +4663,23 @@ h6 {
 
 .trader-stat-value.negative {
   color: var(--danger);
+}
+
+/* Arrow indicator */
+.income-arrow {
+  font-size: 0.7rem;
+  color: var(--success);
+  animation: bounceUp 1s ease-in-out infinite;
+}
+
+@keyframes bounceUp {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
 }

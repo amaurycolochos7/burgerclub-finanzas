@@ -256,16 +256,9 @@ export default function Home() {
                 </div>
                 <div className="trader-stat income-stat">
                     <span className="trader-stat-label">INGRESOS 35H</span>
-                    <div className="income-chart-row">
+                    <div className="income-display">
                         <span className="trader-stat-value positive">{formatCurrency(incomeTotal)}</span>
-                        <svg className="mini-chart" viewBox="0 0 40 20" preserveAspectRatio="none">
-                            <polyline
-                                fill="none"
-                                stroke="var(--success)"
-                                strokeWidth="2"
-                                points="0,18 8,14 16,16 24,10 32,8 40,4"
-                            />
-                        </svg>
+                        {incomeTotal > 0 && <span className="income-indicator">↑</span>}
                     </div>
                 </div>
             </div>
