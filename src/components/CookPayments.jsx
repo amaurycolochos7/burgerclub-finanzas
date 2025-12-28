@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { IconArrowLeft } from './Icons'
+import { IconArrowLeft, IconMoney, IconCalendar } from './Icons'
 
 export default function CookPayments() {
     const navigate = useNavigate()
@@ -39,10 +39,18 @@ export default function CookPayments() {
     }
 
     const formatDate = (dateStr) => {
+        // Example: "sábado, 27 de diciembre"
         return new Date(dateStr).toLocaleDateString('es-MX', {
             weekday: 'long',
             day: 'numeric',
             month: 'long'
+        })
+    }
+
+    const formatTime = (dateStr) => {
+        return new Date(dateStr).toLocaleTimeString('es-MX', {
+            hour: '2-digit',
+            minute: '2-digit'
         })
     }
 
@@ -69,31 +77,54 @@ export default function CookPayments() {
                 <h1 className="header-title">Mis Pagos</h1>
             </div>
 
-            <div className="cook-sales-summary">
-                <span className="cook-sales-label">Pagos recibidos este mes</span>
-                <span className="cook-sales-amount">{formatCurrency(monthTotal)}</span>
+            {/* Banking Style Summary */}
+            <div className="banking-summary-card">
+                <span className="banking-label">Saldo recibido este mes</span>
+                <h1 className="banking-amount">{formatCurrency(monthTotal)}</h1>
             </div>
 
-            <div className="payments-list">
+            <div className="banking-list-container">
+                <div className="banking-list-header">Movimientos Recientes</div>
+
                 {payments.length === 0 ? (
-                    <div className="empty-state">No tienes pagos registrados aún</div>
+                    <div className="empty-state-banking">
+                        <p>No hay movimientos registrados</p>
+                    </div>
                 ) : (
-                    payments.map(payment => (
-                        <div key={payment.id} className="payment-card">
-                            <div className="payment-info">
-                                <span className="payment-date capitalize">{formatDate(payment.payment_date)}</span>
-                                {payment.days_worked > 0 && (
-                                    <span className="payment-detail">Correspondiente a {payment.days_worked} días trabajados</span>
+                    payments.map((payment, index) => {
+                        // Logic to show date separators if needed, or just clean list
+                        // For BBVA style, usually it's a clean list with date on the left or under title
+                        const isFirst = index === 0
+                        const prevDate = !isFirst ? new Date(payments[index - 1].payment_date).toDateString() : null
+                        const currDate = new Date(payment.payment_date).toDateString()
+                        const showDateSeparator = prevDate !== currDate
+
+                        return (
+                            <div key={payment.id} className="banking-item-wrapper">
+                                {showDateSeparator && (
+                                    <div className="banking-date-separator">
+                                        {formatDate(payment.payment_date)}
+                                    </div>
                                 )}
-                                {payment.notes && (
-                                    <p className="payment-notes">"{payment.notes}"</p>
-                                )}
+                                <div className="banking-item">
+                                    <div className="banking-icon-circle">
+                                        <IconMoney />
+                                    </div>
+                                    <div className="banking-details">
+                                        <span className="banking-concept">Abono de Nómina</span>
+                                        <span className="banking-meta">
+                                            {payment.days_worked > 0 ? `${payment.days_worked} días trabajados` : 'Pago recibido'}
+                                            {payment.notes && ` • ${payment.notes}`}
+                                        </span>
+                                    </div>
+                                    <div className="banking-right">
+                                        <span className="banking-value positive">+{formatCurrency(payment.amount)}</span>
+                                        <span className="banking-time">{formatTime(payment.payment_date)}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="payment-amount income">
-                                +{formatCurrency(payment.amount)}
-                            </div>
-                        </div>
-                    ))
+                        )
+                    })
                 )}
             </div>
         </div>

@@ -119,20 +119,28 @@ export default function CookDashboard() {
                 </div>
 
                 {lists.length === 0 ? (
-                    <div className="cook-empty">
-                        <p>No has creado listas aún</p>
+                    <div className="empty-state-banking">
+                        <IconList style={{ opacity: 0.3, width: 32, height: 32 }} />
+                        <p style={{ marginTop: 10 }}>No has creado listas aún</p>
                     </div>
                 ) : (
-                    <div className="cook-lists">
+                    <div className="dashboard-list-container">
                         {lists.map(list => {
                             const badge = getStatusBadge(list.status)
                             return (
-                                <div key={list.id} className="cook-list-item">
-                                    <div className="cook-list-info">
-                                        <span className="cook-list-title">{list.title}</span>
-                                        <span className="cook-list-date">{formatDate(list.target_date)}</span>
+                                <div key={list.id} className="dashboard-list-item" onClick={() => navigate(`/cocina/lista/${list.id}`)}>
+                                    <div className="dashboard-icon-box">
+                                        <IconList />
                                     </div>
-                                    <span className={`badge ${badge.class}`}>{badge.text}</span>
+                                    <div className="dashboard-item-details">
+                                        <span className="dashboard-item-title">{list.title}</span>
+                                        <span className="dashboard-item-subtitle">{formatDate(list.target_date)}</span>
+                                    </div>
+                                    <div className="dashboard-item-status">
+                                        <span className={`status-pill ${badge.class}`}>
+                                            {badge.text}
+                                        </span>
+                                    </div>
                                 </div>
                             )
                         })}

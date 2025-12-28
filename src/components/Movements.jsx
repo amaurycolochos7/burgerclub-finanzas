@@ -64,7 +64,7 @@ export default function Movements() {
                     type: 'payroll',
                     id: pay.id,
                     date: pay.payment_date,
-                    title: `Pago Nómina: ${pay.users?.name}`,
+                    title: pay.users?.name || 'Nómina', // Simplified title
                     amount: parseFloat(pay.amount),
                     details: pay.notes || 'Sin notas',
                     isIncome: false
@@ -85,7 +85,7 @@ export default function Movements() {
                     type: 'night_sale',
                     id: sale.id,
                     date: sale.accepted_at,
-                    title: `Envío de: ${sale.users?.name || 'Cocinero'}`,
+                    title: sale.users?.name || 'Venta Nocturna', // Simplified title
                     amount: parseFloat(sale.total_amount),
                     details: sale.description || 'Sin detalles',
                     isIncome: true
@@ -129,11 +129,24 @@ export default function Movements() {
     }
 
     const formatDate = (dateStr) => {
-        return new Date(dateStr).toLocaleDateString('es-MX', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long'
-        })
+        // Short format: "28 Dic"
+        const date = new Date(dateStr)
+        const day = date.getDate()
+        const month = date.toLocaleDateString('es-MX', { month: 'short' })
+        // Capitalize month
+        const monthCap = month.charAt(0).toUpperCase() + month.slice(1)
+        return `${day} ${monthCap}`
+    }
+
+    const formatTime = (dateStr) => {
+        // If it looks like a date-only string (YYYY-MM-DD), don't show specific time or show 00:00 if desired.
+        // But assuming most have timestamps.
+        const date = new Date(dateStr)
+        return date.toLocaleTimeString('es-MX', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        }).toLowerCase()
     }
 
     const [expandedId, setExpandedId] = useState(null)
@@ -163,58 +176,65 @@ export default function Movements() {
                 <h1 className="header-title">Movimientos</h1>
             </div>
 
-            <div className="movements-list">
+            <div className="movements-list-refined">
                 {movements.length === 0 ? (
-                    <div className="empty-state">No hay movimientos registrados</div>
+                    <div className="empty-state-banking">
+                        <p>No hay movimientos registrados</p>
+                    </div>
                 ) : (
                     movements.map(mov => (
-                        <div key={mov.id} className={`movement-card-wrapper ${expandedId === mov.id ? 'expanded' : ''}`}>
+                        <div key={mov.id} className={`movement-card-refined ${expandedId === mov.id ? 'expanded' : ''}`}>
                             <div
-                                className="movement-card"
+                                className="refined-card-content"
                                 onClick={() => toggleExpand(mov.id, mov.type, mov.date)}
                             >
-                                <div className="movement-icon">
+                                <div className="refined-icon-box">
                                     {mov.type === 'shopping' ? <IconCart /> :
                                         mov.type === 'night_sale' ? <IconInbox /> : <IconCheck />}
                                 </div>
-                                <div className="movement-info">
-                                    <span className="movement-title">{mov.title}</span>
-                                    <span className="movement-date capitalize">{formatDate(mov.date)}</span>
+
+                                <div className="refined-info">
+                                    <span className="refined-title">{mov.title}</span>
+                                    <span className="refined-date">
+                                        {formatDate(mov.date)} • {formatTime(mov.date)}
+                                    </span>
                                 </div>
-                                <div className={`movement-amount ${mov.isIncome ? 'positive' : 'negative'}`}>
-                                    {mov.isIncome ? '+' : '-'}{formatCurrency(mov.amount)}
+
+                                <div className="refined-amount-box">
+                                    <span className={`refined-amount ${mov.isIncome ? 'positive' : 'negative'}`}>
+                                        {mov.isIncome ? '+' : '-'}{formatCurrency(mov.amount)}
+                                    </span>
                                 </div>
-                                {mov.type === 'payroll' && (
-                                    <button
-                                        className="delete-btn-small"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleDelete(mov.id)
-                                        }}
-                                        title="Eliminar movimiento"
-                                    >
-                                        <IconClose />
-                                    </button>
-                                )}
                             </div>
 
-                            {/* Expanded Details Panel */}
+                            {/* Expanded Details */}
                             {expandedId === mov.id && (
-                                <div className="movement-details">
-                                    <div className="movement-details-row">
-                                        <span className="movement-details-label">Monto:</span>
-                                        <span className={`movement-details-value ${mov.isIncome ? 'positive' : 'negative'}`}>
-                                            {mov.isIncome ? '+' : '-'}{formatCurrency(mov.amount)}
-                                        </span>
+                                <div className="refined-details-panel">
+                                    <div className="refined-detail-row">
+                                        <span>Fecha:</span>
+                                        <span className="capitalize">{formatDate(mov.date)}</span>
                                     </div>
-                                    <div className="movement-details-row">
-                                        <span className="movement-details-label">Fecha:</span>
-                                        <span className="movement-details-value capitalize">{formatDate(mov.date)}</span>
+                                    <div className="refined-detail-row">
+                                        <span>Hora:</span>
+                                        <span className="capitalize">{formatTime(mov.date)}</span>
                                     </div>
                                     {mov.details && (
-                                        <div className="movement-details-notes">
-                                            <span className="movement-details-label">Detalles:</span>
-                                            <p className="movement-details-text">{mov.details}</p>
+                                        <div className="refined-detail-note">
+                                            "{mov.details}"
+                                        </div>
+                                    )}
+
+                                    {mov.type === 'payroll' && (
+                                        <div className="refined-actions-row">
+                                            <button
+                                                className="link-danger"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDelete(mov.id)
+                                                }}
+                                            >
+                                                Eliminar registro
+                                            </button>
                                         </div>
                                     )}
                                 </div>
