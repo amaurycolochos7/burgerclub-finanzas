@@ -6680,7 +6680,8 @@ h6 {
 }
 
 .refined-amount.positive {
-  color: var(--success);
+  color: #3b82f6;
+  /* Blue for better contrast against red */
 }
 
 .refined-amount.negative {
