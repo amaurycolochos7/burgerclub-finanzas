@@ -1,11 +1,13 @@
-// Complete redesign of Payroll component
+// Modern Payroll component with improved UI
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { IconArrowLeft, IconCheck, IconClose } from './Icons'
+import { IconArrowLeft, IconCheck, IconClose, IconMoney } from './Icons'
+import { useToast } from './Toast'
 
 export default function Payroll() {
     const navigate = useNavigate()
+    const { showToast } = useToast()
     const [cooks, setCooks] = useState([])
     const [payments, setPayments] = useState([])
     const [loading, setLoading] = useState(true)
@@ -23,15 +25,24 @@ export default function Payroll() {
 
     const fetchData = async () => {
         try {
-            // Fetch cooks
-            const { data: cooksData } = await supabase
+            // Fetch cooks (excluding deleted ones)
+            let { data: cooksData, error: cooksError } = await supabase
                 .from('users')
                 .select('*')
                 .eq('role', 'cook')
+                .is('deleted_at', null)
+
+            // Fallback if deleted_at column doesn't exist
+            if (cooksError && cooksError.message && cooksError.message.includes('deleted_at')) {
+                const result = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('role', 'cook')
+                cooksData = result.data
+            }
 
             setCooks(cooksData || [])
 
-            // Fetch recent payments
             const { data: paymentsData } = await supabase
                 .from('payroll')
                 .select('*, users(name)')
@@ -67,17 +78,14 @@ export default function Payroll() {
             if (error) throw error
 
             setPayments([data, ...payments])
-
-            // Reset form
             setSelectedCook('')
             setAmount('')
             setDaysWorked('')
             setNotes('')
-
-            alert('Pago registrado correctamente')
+            showToast('Pago registrado correctamente', 'success')
         } catch (error) {
             console.error('Error recording payment:', error)
-            alert('Error al registrar el pago')
+            showToast('Error al registrar el pago', 'error')
         } finally {
             setSubmitting(false)
         }
@@ -93,7 +101,6 @@ export default function Payroll() {
                 .eq('id', id)
 
             if (error) throw error
-
             setPayments(payments.filter(p => p.id !== id))
         } catch (error) {
             console.error('Error deleting payment:', error)
@@ -105,7 +112,7 @@ export default function Payroll() {
         return new Intl.NumberFormat('es-MX', {
             style: 'currency',
             currency: 'MXN',
-            minimumFractionDigits: 2
+            minimumFractionDigits: 0
         }).format(val || 0)
     }
 
@@ -116,6 +123,30 @@ export default function Payroll() {
             hour: '2-digit',
             minute: '2-digit'
         })
+    }
+
+    const getTotalPaidThisMonth = () => {
+        const now = new Date()
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+        return payments
+            .filter(p => new Date(p.payment_date) >= monthStart)
+            .reduce((sum, p) => sum + (p.amount || 0), 0)
+    }
+
+    const getAvatarGradient = (name) => {
+        const gradients = [
+            ['#667eea', '#764ba2'],
+            ['#f093fb', '#f5576c'],
+            ['#4facfe', '#00f2fe'],
+            ['#43e97b', '#38f9d7'],
+            ['#fa709a', '#fee140'],
+            ['#a18cd1', '#fbc2eb'],
+            ['#30cfd0', '#330867'],
+            ['#ff6b6b', '#ffa66b'],
+        ]
+        if (!name) return gradients[0]
+        const index = name.charCodeAt(0) % gradients.length
+        return gradients[index]
     }
 
     if (loading) {
@@ -135,68 +166,104 @@ export default function Payroll() {
                 <h1 className="header-title">Nómina</h1>
             </div>
 
-            {/* New Payment Card */}
-            <div className="card-glass payment-form-card">
-                <h2 className="card-title-sm">Nuevo Pago</h2>
-                <form onSubmit={handlePayment} className="modern-form">
+            {/* Stats Card */}
+            <div className="payroll-summary-card">
+                <div className="payroll-summary-icon">
+                    <IconMoney />
+                </div>
+                <div className="payroll-summary-content">
+                    <span className="payroll-summary-label">Pagado este mes</span>
+                    <span className="payroll-summary-amount">{formatCurrency(getTotalPaidThisMonth())}</span>
+                </div>
+            </div>
 
-                    {/* Cook Selection - Visual Chips */}
-                    <div className="form-group">
-                        <label className="label-sm">Seleccionar Cocinero</label>
-                        <div className="cook-chips">
-                            {cooks.map(cook => (
-                                <div
-                                    key={cook.id}
-                                    className={`cook-chip ${selectedCook === cook.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedCook(cook.id)}
-                                >
-                                    <div className="cook-avatar-sm">
-                                        {cook.name.charAt(0)}
-                                    </div>
-                                    <span className="cook-name">{cook.name}</span>
-                                </div>
-                            ))}
-                        </div>
+            {/* Payment Form */}
+            <div className="payroll-card">
+                <h2 className="payroll-section-title">Nuevo Pago</h2>
+
+                {/* Cook Selection - Horizontal Scroll */}
+                <div className="payroll-cook-section">
+                    <label className="payroll-label">Seleccionar Cocinero</label>
+                    <div className="payroll-cook-scroll">
+                        {cooks.length === 0 ? (
+                            <p className="payroll-empty-msg">No hay cocineros</p>
+                        ) : (
+                            cooks.map(cook => {
+                                const [color1, color2] = getAvatarGradient(cook.name)
+                                const isSelected = selectedCook === cook.id
+                                return (
+                                    <button
+                                        key={cook.id}
+                                        type="button"
+                                        className={`payroll-cook-btn ${isSelected ? 'selected' : ''}`}
+                                        onClick={() => setSelectedCook(cook.id)}
+                                    >
+                                        <div
+                                            className="payroll-cook-avatar-lg"
+                                            style={{
+                                                background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                                boxShadow: isSelected ? `0 4px 20px ${color1}50` : 'none'
+                                            }}
+                                        >
+                                            {cook.name.charAt(0).toUpperCase()}
+                                            {isSelected && (
+                                                <div className="payroll-cook-check-badge">
+                                                    <IconCheck />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="payroll-cook-label">{cook.name.split(' ')[0]}</span>
+                                    </button>
+                                )
+                            })
+                        )}
                     </div>
+                </div>
 
-                    <div className="form-row">
-                        <div className="form-group flex-2">
-                            <label className="label-sm">Monto ($)</label>
-                            <input
-                                type="number"
-                                className="input-modern"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0.00"
-                                step="0.01"
-                                required
-                            />
+                <form onSubmit={handlePayment}>
+                    {/* Amount & Days - Side by Side */}
+                    <div className="payroll-inputs-container">
+                        <div className="payroll-monto-field">
+                            <label className="payroll-label">Monto</label>
+                            <div className="payroll-amount-box">
+                                <span className="payroll-dollar">$</span>
+                                <input
+                                    type="number"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    required
+                                />
+                            </div>
                         </div>
-
-                        <div className="form-group flex-1">
-                            <label className="label-sm">Días</label>
+                        <div className="payroll-dias-field">
+                            <label className="payroll-label">Días</label>
                             <input
                                 type="number"
-                                className="input-modern"
+                                className="payroll-dias-input"
                                 value={daysWorked}
                                 onChange={(e) => setDaysWorked(e.target.value)}
-                                placeholder="#"
+                                placeholder="0"
                             />
                         </div>
                     </div>
 
-                    <div className="form-group">
+                    {/* Notes */}
+                    <div className="payroll-field">
                         <input
-                            className="input-modern"
+                            type="text"
+                            className="payroll-input payroll-input-notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Agregar nota (opcional)..."
                         />
                     </div>
 
+                    {/* Submit */}
                     <button
                         type="submit"
-                        className="btn-pay-action"
+                        className="payroll-btn-submit"
                         disabled={submitting || !selectedCook || !amount}
                     >
                         {submitting ? 'Procesando...' : 'Realizar Pago'}
@@ -205,36 +272,43 @@ export default function Payroll() {
                 </form>
             </div>
 
-            <div className="section-divider">Historial Reciente</div>
+            {/* History */}
+            <div className="section-divider"><span>HISTORIAL</span></div>
 
-            <div className="payments-list-modern">
+            <div className="payroll-list">
                 {payments.length === 0 ? (
-                    <div className="empty-state">No hay pagos recientes</div>
+                    <div className="payroll-empty-state">
+                        <IconMoney />
+                        <p>No hay pagos registrados</p>
+                    </div>
                 ) : (
-                    payments.map(payment => (
-                        <div key={payment.id} className="payment-item-modern">
-                            <div className="payment-avatar">
-                                {payment.users?.name.charAt(0)}
-                            </div>
-                            <div className="payment-details">
-                                <span className="payment-name">{payment.users?.name}</span>
-                                <span className="payment-meta">
-                                    {formatDate(payment.payment_date)} • {payment.days_worked} días
-                                </span>
-                            </div>
-                            <div className="payment-right">
-                                <div className="payment-amount-modern">
-                                    -{formatCurrency(payment.amount)}
+                    payments.map(payment => {
+                        const [color1, color2] = getAvatarGradient(payment.users?.name)
+                        return (
+                            <div key={payment.id} className="payroll-item">
+                                <div
+                                    className="payroll-item-avatar"
+                                    style={{ background: `linear-gradient(135deg, ${color1}, ${color2})` }}
+                                >
+                                    {payment.users?.name?.charAt(0) || '?'}
                                 </div>
+                                <div className="payroll-item-info">
+                                    <span className="payroll-item-name">{payment.users?.name || 'Desconocido'}</span>
+                                    <span className="payroll-item-meta">
+                                        {formatDate(payment.payment_date)}
+                                        {payment.days_worked > 0 && ` · ${payment.days_worked}d`}
+                                    </span>
+                                </div>
+                                <div className="payroll-item-amount">-{formatCurrency(payment.amount)}</div>
                                 <button
-                                    className="btn-delete-icon"
+                                    className="payroll-item-delete"
                                     onClick={() => handleDelete(payment.id)}
                                 >
                                     <IconClose />
                                 </button>
                             </div>
-                        </div>
-                    ))
+                        )
+                    })
                 )}
             </div>
         </div>
